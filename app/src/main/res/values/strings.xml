@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">My Application</string>
+    <string name="priority_1">1</string>
+    <string name="note_title">Title</string>
+    <string name="note_description">description</string>
+    <string name="add_note_title">Title</string>
+    <string name="edit_text_des">description</string>
+    <string name="priority">Priority</string>
+    <string name="title_save_menu">Save</string>
 </resources>
