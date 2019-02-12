@@ -14,7 +14,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -24,6 +23,8 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     public static final int ADD_NOTE_REQUEST = 1;
+
+    public static final int EDIT_NOTE_REQUEST = 2;
 
     private NoteViewModel noteViewModel;
 
@@ -36,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
         fabAddNote.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, AddNotesActivity.class);
+                Intent intent = new Intent(MainActivity.this, AddEditNotesActivity.class);
                 startActivityForResult(intent, ADD_NOTE_REQUEST);
             }
         });
@@ -69,6 +70,18 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "Note deleted", Toast.LENGTH_SHORT).show();
             }
         }).attachToRecyclerView(recyclerView);
+
+        adapter.setOnItemClickListener(new NoteAdapter.onItemClickListener() {
+            @Override
+            public void onItemClick(Note note) {
+                Intent intent = new Intent(MainActivity.this, AddEditNotesActivity.class);
+                intent.putExtra(AddEditNotesActivity.EXTRA_ID, note.getId());
+                intent.putExtra(AddEditNotesActivity.EXTRA_TITLE, note.getTitle());
+                intent.putExtra(AddEditNotesActivity.EXTRA_DESC, note.getDescription());
+                intent.putExtra(AddEditNotesActivity.EXTRA_PRIORITY, note.getPriority());
+                startActivityForResult(intent, EDIT_NOTE_REQUEST);
+            }
+        });
     }
 
     @Override
@@ -76,14 +89,30 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == ADD_NOTE_REQUEST && resultCode == RESULT_OK) {
-            String title = data.getStringExtra(AddNotesActivity.EXTRA_TITLE);
-            String desc = data.getStringExtra(AddNotesActivity.EXTRA_DESC);
-            int priority = data.getIntExtra(AddNotesActivity.EXTRA_PRIORITY, 1);
+            String title = data.getStringExtra(AddEditNotesActivity.EXTRA_TITLE);
+            String desc = data.getStringExtra(AddEditNotesActivity.EXTRA_DESC);
+            int priority = data.getIntExtra(AddEditNotesActivity.EXTRA_PRIORITY, 1);
 
             Note note = new Note(title, desc, priority);
             noteViewModel.insert(note);
 
             Toast.makeText(this, "Note Saved", Toast.LENGTH_SHORT).show();
+        } else if (requestCode == EDIT_NOTE_REQUEST && resultCode == RESULT_OK) {
+            int id = data.getIntExtra(AddEditNotesActivity.EXTRA_ID, -1);
+            if(id == -1){
+                Toast.makeText(this, "Note can't be updated", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            String title = data.getStringExtra(AddEditNotesActivity.EXTRA_TITLE);
+            String desc = data.getStringExtra(AddEditNotesActivity.EXTRA_DESC);
+            int priority = data.getIntExtra(AddEditNotesActivity.EXTRA_PRIORITY, 1);
+
+            Note note = new Note(title, desc, priority);
+            note.setId(id);
+            noteViewModel.update(note);
+            Toast.makeText(this, "Note updated", Toast.LENGTH_SHORT).show();
+
+
         } else {
             Toast.makeText(this, "Not is not saved", Toast.LENGTH_SHORT).show();
         }
@@ -104,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "All notes deleted", Toast.LENGTH_SHORT).show();
                 return true;
             default:
-               return super.onOptionsItemSelected(item);
+                return super.onOptionsItemSelected(item);
         }
     }
 }

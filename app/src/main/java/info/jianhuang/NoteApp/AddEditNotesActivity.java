@@ -11,10 +11,12 @@ import android.widget.EditText;
 import android.widget.NumberPicker;
 import android.widget.Toast;
 
-public class AddNotesActivity extends AppCompatActivity {
+public class AddEditNotesActivity extends AppCompatActivity {
     private EditText et_title;
     private EditText et_description;
     private NumberPicker np_priority;
+
+    public static final String EXTRA_ID = "EXTRA_ID";
 
     public static final String EXTRA_TITLE = "EXTRA_TITLE";
 
@@ -35,7 +37,16 @@ public class AddNotesActivity extends AppCompatActivity {
         np_priority.setMaxValue(10);
 
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_close_black_24dp);
-        setTitle("Add Note"); //action bar title
+        Intent intent = getIntent();
+
+        if(intent.hasExtra(EXTRA_ID)){
+            setTitle("Edit Note");
+            et_title.setText(intent.getStringExtra(EXTRA_TITLE));
+            et_description.setText(intent.getStringExtra(EXTRA_DESC));
+            np_priority.setValue(intent.getIntExtra(EXTRA_PRIORITY, 1));
+        }else {
+            setTitle("Add Note"); //action bar title
+        }
     }
 
     @Override
@@ -70,6 +81,11 @@ public class AddNotesActivity extends AppCompatActivity {
             data.putExtra(EXTRA_TITLE, title);
             data.putExtra(EXTRA_DESC, desc);
             data.putExtra(EXTRA_PRIORITY, priority);
+
+            int id = getIntent().getIntExtra(EXTRA_ID, -1);
+            if(id != -1){
+                data.putExtra(EXTRA_ID, id);
+            }
 
             setResult(RESULT_OK, data);
             finish();
